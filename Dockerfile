@@ -1,11 +1,9 @@
 FROM python:3.10-slim
 
-WORKDIR /medcare
+WORKDIR /medc-back
 
 COPY requirements.txt
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY backend /medcare/backend
-
-CMD ["python", "backend/main.py"]
+CMD ["python", "main.py"]
