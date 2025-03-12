@@ -4,6 +4,8 @@ WORKDIR /medc-back
 
 COPY requirements.txt /medc-back
 
+ENV main.py
+
 RUN pip install --no-cache-dir -r requirements.txt
 
 CMD ["python", "main.py"]
