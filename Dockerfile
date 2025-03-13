@@ -8,6 +8,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY main.py .
 COPY classificador.py .
 
-COPY cardiom3.PNG .
+COPY 2409_2004i.h5 .
 
 CMD ["python", "main.py"]
