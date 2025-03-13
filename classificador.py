@@ -68,7 +68,7 @@ def weighted_loss(pos_weights, neg_weights, epsilon=1e-7):
 
 model = load_model('2409_2004i.h5', custom_objects = {'loss': weighted_loss})
 
-predictions = model.predict(img)
+# predictions = model.predict(img)
 
 for label, pred in zip(labels, predictions[0]):
     print(f'{label}: {pred * 100:.2f}%')
