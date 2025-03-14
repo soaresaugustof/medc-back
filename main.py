@@ -203,11 +203,8 @@ def classificar_imagem():
         img_path = os.path.join(temp_dir, file.filename)
         file.save(img_path)
 
-        # Preprocessa a imagem
-        img = clf.preprocess_image_with_generator(img_path, target_size=(320, 320))
-
-        # Faz a previsão com o modelo
-        predictions = clf.model.predict(img)
+        # Faz a previsão com a função ajustada, sem a necessidade de preprocessar manualmente
+        predictions = clf.load_model_and_predict(img_path)
 
         # Cria um diagnóstico provisório (não revisado)
         resultado = clf.labels[np.argmax(predictions[0])]  # Resultado com base na classe com maior probabilidade
