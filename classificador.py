@@ -1,7 +1,4 @@
 import os
-
-os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
-
 import keras
 import tensorflow as tf
 import numpy as np
@@ -11,12 +8,22 @@ from tensorflow.keras.models import load_model
 import matplotlib.pyplot as plt
 
 labels = ['Atelectasis', 'Cardiomegaly', 'Consolidation', 'Edema', 'Effusion',
-       'Emphysema', 'Fibrosis', 'Hernia', 'Infiltration', 'Mass', 'Nodule',
-       'Pleural Thickening', 'Pneumonia', 'Pneumothorax', 'Pneumoperitoneum',
-       'Pneumomediastinum', 'Subcutaneous Emphysema', 'Tortuous Aorta',
-       'Calcification of the Aorta']
+          'Emphysema', 'Fibrosis', 'Hernia', 'Infiltration', 'Mass', 'Nodule',
+          'Pleural Thickening', 'Pneumonia', 'Pneumothorax', 'Pneumoperitoneum',
+          'Pneumomediastinum', 'Subcutaneous Emphysema', 'Tortuous Aorta',
+          'Calcification of the Aorta']
 
 def preprocess_image_with_generator(img_path, target_size=(320, 320)):
+    """
+    Preprocess the image to make it ready for prediction.
+
+    Args:
+        img_path: Path to the image file.
+        target_size: Target size for resizing the image.
+
+    Returns:
+        Preprocessed image array.
+    """
     # Cria um ImageDataGenerator com apenas a normalização usada no treino
     image_generator = ImageDataGenerator(
         samplewise_center=True,  # Centraliza por imagem individualmente
@@ -38,7 +45,17 @@ def preprocess_image_with_generator(img_path, target_size=(320, 320)):
     return img_array
 
 def weighted_loss(pos_weights, neg_weights, epsilon=1e-7):
+    """
+    Função de perda ponderada para treinamento de modelo.
 
+    Args:
+        pos_weights: Pesos positivos para cada classe.
+        neg_weights: Pesos negativos para cada classe.
+        epsilon: Valor pequeno para evitar log(0).
+
+    Returns:
+        Função de perda.
+    """
     def loss(y_true, y_pred):
         # Converta y_true e y_pred para float32 para garantir a compatibilidade
         y_true = tf.cast(y_true, tf.float32)
@@ -63,12 +80,26 @@ def weighted_loss(pos_weights, neg_weights, epsilon=1e-7):
 
     return loss
 
+# Carregar o modelo
+def load_model_and_predict(img_path):
+    """
+    Carregar o modelo e realizar a previsão com a imagem fornecida.
 
-# img = preprocess_image_with_generator('cardiom3.png', target_size=(320, 320))
+    Args:
+        img_path: Caminho da imagem para fazer a previsão.
 
-model = load_model('2409_2004i.h5', custom_objects = {'loss': weighted_loss})
+    Returns:
+        Previsões para as classes.
+    """
+    model = load_model('2409_2004i.h5', custom_objects={'loss': weighted_loss})
 
-# predictions = model.predict(img)
+    # Carregar a imagem para previsão
+    img = preprocess_image_with_generator(img_path, target_size=(320, 320))
 
-for label, pred in zip(labels, predictions[0]):
-    print(f'{label}: {pred * 100:.2f}%')
+    # Realizar a previsão
+    predictions = model.predict(img)
+
+    # Exibir as previsões
+    for label, pred in zip(labels, predictions[0]):
+        print(f'{label}: {pred * 100:.2f}%')
+
