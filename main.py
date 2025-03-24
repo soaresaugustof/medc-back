@@ -7,16 +7,16 @@ import numpy as np
 import classificador as clf
 
 mydb = mysql.connector.connect(
-    host="localhost",
+    host="mysql.railway.internal",
     user="root",
-    passwd="1234",
+    passwd="XhDVnqIzdxUTDMeJwnfYHupELynhPnsV",
     database="medcaredb",
     auth_plugin='mysql_native_password'
 )
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:1234@localhost/medcare'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:XhDVnqIzdxUTDMeJwnfYHupELynhPnsV@mysql.railway.internal:3306/medcaredb'
 
 #CADASTRO DE USUARIO
 @app.route('/cadastro', methods=['POST'])
