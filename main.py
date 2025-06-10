@@ -10,6 +10,18 @@ import classificador as clf
 # Carrega as variáveis de ambiente do arquivo .env
 load_dotenv()
 
+# Checagem de variáveis de ambiente obrigatórias
+required_env_vars = [
+    "MYSQLHOST",
+    "MYSQLUSER",
+    "MYSQL_ROOT_PASSWORD",
+    "MYSQL_DATABASE",
+    "MYSQLPORT"
+]
+missing_vars = [var for var in required_env_vars if not os.getenv(var)]
+if missing_vars:
+    raise RuntimeError(f"Variáveis de ambiente ausentes: {', '.join(missing_vars)}. Configure-as no Railway!")
+
 mydb = mysql.connector.connect(
     host=os.getenv("MYSQLHOST"),
     user=os.getenv("MYSQLUSER"),
