@@ -3,20 +3,25 @@ import mysql.connector
 import bcrypt
 import os
 import numpy as np
+from dotenv import load_dotenv
 
 import classificador as clf
 
+# Carrega as variáveis de ambiente do arquivo .env
+load_dotenv()
+
 mydb = mysql.connector.connect(
-    host="mysql.railway.internal",
-    user="root",
-    passwd="XhDVnqIzdxUTDMeJwnfYHupELynhPnsV",
-    database="medcaredb",
+    host=os.getenv("MYSQLHOST"),
+    user=os.getenv("MYSQLUSER"),
+    passwd=os.getenv("MYSQL_ROOT_PASSWORD"),
+    database=os.getenv("MYSQL_DATABASE"),
+    port=int(os.getenv("MYSQLPORT")),
     auth_plugin='mysql_native_password'
 )
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:XhDVnqIzdxUTDMeJwnfYHupELynhPnsV@mysql.railway.internal:3306/medcaredb'
+app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql://{os.getenv('MYSQLUSER')}:{os.getenv('MYSQL_ROOT_PASSWORD')}@{os.getenv('MYSQLHOST')}:{os.getenv('MYSQLPORT')}/{os.getenv('MYSQL_DATABASE')}"
 
 #CADASTRO DE USUARIO
 @app.route('/cadastro', methods=['POST'])
