@@ -7,33 +7,21 @@ from dotenv import load_dotenv
 
 import classificador as clf
 
-# Carrega as variáveis de ambiente do arquivo .env
-load_dotenv()
-
-# Checagem de variáveis de ambiente obrigatórias
-required_env_vars = [
-    "MYSQLHOST",
-    "MYSQLUSER",
-    "MYSQL_ROOT_PASSWORD",
-    "MYSQL_DATABASE",
-    "MYSQLPORT"
-]
-missing_vars = [var for var in required_env_vars if not os.getenv(var)]
-if missing_vars:
-    raise RuntimeError(f"Variáveis de ambiente ausentes: {', '.join(missing_vars)}. Configure-as no Railway!")
+# Conexão direta usando a string pública do Railway
+MYSQL_CONN_STR = "mysql://root:NdLvdNuqpWSRYXsJNipkNvQSGTjJfHth@yamabiko.proxy.rlwy.net:11204/railway"
 
 mydb = mysql.connector.connect(
-    host=os.getenv("MYSQLHOST"),
-    user=os.getenv("MYSQLUSER"),
-    passwd=os.getenv("MYSQL_ROOT_PASSWORD"),
-    database=os.getenv("MYSQL_DATABASE"),
-    port=int(os.getenv("MYSQLPORT")),
+    host="yamabiko.proxy.rlwy.net",
+    user="root",
+    passwd="NdLvdNuqpWSRYXsJNipkNvQSGTjJfHth",
+    database="railway",
+    port=11204,
     auth_plugin='mysql_native_password'
 )
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql://{os.getenv('MYSQLUSER')}:{os.getenv('MYSQL_ROOT_PASSWORD')}@{os.getenv('MYSQLHOST')}:{os.getenv('MYSQLPORT')}/{os.getenv('MYSQL_DATABASE')}"
+app.config['SQLALCHEMY_DATABASE_URI'] = MYSQL_CONN_STR
 
 #CADASTRO DE USUARIO
 @app.route('/cadastro', methods=['POST'])
