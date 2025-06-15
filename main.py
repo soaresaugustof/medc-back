@@ -165,7 +165,7 @@ def get_pacientes():
     finally:
         # Garante que o cursor e a conexão sejam fechados corretamente
         cursor.close()
-        mydb.close()
+        # Removido mydb.close() para evitar fechar a conexão global
 
 
 ## ROTA DA IA
@@ -271,7 +271,7 @@ def get_exames():
     finally:
         # Garante que o cursor e a conexão sejam fechados corretamente
         cursor.close()
-        mydb.close()
+        # Removido mydb.close() para evitar fechar a conexão global
 
 
 if __name__ == "__main__":
