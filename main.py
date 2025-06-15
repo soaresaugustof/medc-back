@@ -21,14 +21,14 @@ def get_model():
             raise
     return clf.model
 
-#mydb = mysql.connector.connect(
-#    host="yamabiko.proxy.rlwy.net",
-#   user="root",
-#    passwd="NdLvdNuqpWSRYXsJNipkNvQSGTjJfHth",
-#    database="medcaredb",
-#    port=11204,
-#    auth_plugin='mysql_native_password'
-#)
+mydb = mysql.connector.connect(
+    host="yamabiko.proxy.rlwy.net",
+   user="root",
+    passwd="NdLvdNuqpWSRYXsJNipkNvQSGTjJfHth",
+    database="medcaredb",
+    port=11204,
+    auth_plugin='mysql_native_password'
+)
 
 app = Flask(__name__)
 
