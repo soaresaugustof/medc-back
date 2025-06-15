@@ -1,17 +1,23 @@
-from flask import Flask, jsonify, make_response, request
-import mysql.connector
-import bcrypt
 import os
+import mysql.connector
+from dotenv import load_dotenv
+
+# Carrega as variáveis de ambiente de um arquivo .env (para desenvolvimento local)
+load_dotenv()
+
+from flask import Flask, jsonify, make_response, request
+import bcrypt
 import numpy as np
 
 import classificador as clf
 
+# Conexão usando variáveis de ambiente fornecidas pela Railway
 mydb = mysql.connector.connect(
-    host="yamabiko.proxy.rlwy.net",
-    user="root",
-    passwd="NdLvdNuqpWSRYXsJNipkNvQSGTjJfHth",
-    database="medcaredb",
-    port=11204,
+    host=os.getenv("MYSQLHOST"),
+    user=os.getenv("MYSQLUSER"),
+    passwd=os.getenv("MYSQLPASSWORD"),
+    database=os.getenv("MYSQLDATABASE"),
+    port=int(os.getenv("MYSQLPORT")),
     auth_plugin='mysql_native_password'
 )
 
