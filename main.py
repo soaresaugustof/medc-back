@@ -205,6 +205,11 @@ def classificar_imagem():
         if not email_paciente:
             return jsonify({'error': 'Email do paciente não fornecido!'}), 400
 
+        # Obtém o email do usuário (médico) da request
+        email_usuario = request.form.get('email_usuario')
+        if not email_usuario:
+            return jsonify({'error': 'Email do usuário não fornecido!'}), 400
+
         # Conexão com o banco de dados
         cursor = mydb.cursor()
 
@@ -216,6 +221,14 @@ def classificar_imagem():
             return jsonify({'error': 'Paciente não encontrado!'}), 404
 
         paciente_id = paciente[0]  # Obtém o ID do paciente encontrado
+
+        # Verifica se o usuário existe no banco de dados pelo email
+        cursor.execute("SELECT idUsuario FROM Usuario WHERE email = %s", (email_usuario,))
+        usuario = cursor.fetchone()
+        if not usuario:
+            cursor.close()
+            return jsonify({'error': 'Usuário não encontrado!'}), 404
+        usuario_id = usuario[0]
 
         temp_dir = './temp'
         if not os.path.exists(temp_dir):
@@ -247,7 +260,7 @@ def classificar_imagem():
         cursor.execute("""
             INSERT INTO Exame (data_exame, imagem_exame, Diagnostico_idDiagnostico, Usuario_idUsuario, Paciente_idPaciente)
             VALUES (NOW(), %s, %s, %s, %s)
-        """, ('file-exame', diagnostico_id, 13, paciente_id))  # Usuário com ID 13, altere conforme necessário
+        """, ('file-exame', diagnostico_id, usuario_id, paciente_id))
         exame_id = cursor.lastrowid  # Obtém o ID do exame inserido
 
         # Confirma a transação (com o exame e o diagnóstico)
