@@ -3,25 +3,20 @@ import mysql.connector
 import bcrypt
 import os
 import numpy as np
-from dotenv import load_dotenv
 
 import classificador as clf
 
-# Conexão direta usando a string pública do Railway
-MYSQL_CONN_STR = "mysql://root:NdLvdNuqpWSRYXsJNipkNvQSGTjJfHth@yamabiko.proxy.rlwy.net:11204/railway"
-
 mydb = mysql.connector.connect(
-    host="yamabiko.proxy.rlwy.net",
+    host="localhost",
     user="root",
-    passwd="NdLvdNuqpWSRYXsJNipkNvQSGTjJfHth",
-    database="railway",
-    port=11204,
+    passwd="1234",
+    database="medcaredb",
     auth_plugin='mysql_native_password'
 )
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = MYSQL_CONN_STR
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:1234@localhost/medcare'
 
 #CADASTRO DE USUARIO
 @app.route('/cadastro', methods=['POST'])
@@ -208,8 +203,11 @@ def classificar_imagem():
         img_path = os.path.join(temp_dir, file.filename)
         file.save(img_path)
 
-        # Faz a previsão com a função ajustada, sem a necessidade de preprocessar manualmente
-        predictions = clf.load_model_and_predict(img_path)
+        # Preprocessa a imagem
+        img = clf.preprocess_image_with_generator(img_path, target_size=(320, 320))
+
+        # Faz a previsão com o modelo
+        predictions = clf.model.predict(img)
 
         # Cria um diagnóstico provisório (não revisado)
         resultado = clf.labels[np.argmax(predictions[0])]  # Resultado com base na classe com maior probabilidade
@@ -276,7 +274,4 @@ def get_exames():
         mydb.close()
 
 
-if __name__ == "__main__":
-    import os
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=True)
+app.run(debug=True)
