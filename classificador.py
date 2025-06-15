@@ -66,10 +66,12 @@ def weighted_loss(pos_weights, neg_weights, epsilon=1e-7):
 # Remover execução automática de predição ao importar o módulo
 # Deixe apenas as funções e variáveis utilitárias
 
-# Se quiser rodar testes, use este bloco:
+# Carrega o modelo no escopo global para que esteja disponível após a importação
+model = load_model('2409_2004i.h5', custom_objects={'loss': weighted_loss})
+
+# Se quiser manter os testes, pode deixar o bloco if __name__ == "__main__":
 if __name__ == "__main__":
     img = preprocess_image_with_generator('cardiom3.png', target_size=(320, 320))
-    model = load_model('2409_2004i.h5', custom_objects = {'loss': weighted_loss})
     predictions = model.predict(img)
     for label, pred in zip(labels, predictions[0]):
         print(f'{label}: {pred * 100:.2f}%')
