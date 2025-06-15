@@ -300,3 +300,10 @@ def get_exames():
 @app.route("/", methods=["GET"])
 def health_check():
     return "OK", 200
+
+# Força o Gunicorn a escutar na porta 5000, que é a porta esperada pelo Railway
+import os
+port = os.environ.get('PORT', '5000')
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=int(port))

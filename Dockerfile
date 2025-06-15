@@ -12,4 +12,4 @@ COPY 2409_2004i.h5 .
 
 EXPOSE 5000
 
-CMD gunicorn main:app --bind 0.0.0.0:$PORT
+CMD gunicorn main:app --bind 0.0.0.0:5000
