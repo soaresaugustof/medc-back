@@ -6,6 +6,21 @@ import numpy as np
 
 import classificador as clf
 
+# Lazy load do modelo Keras
+model_loaded = False
+
+def get_model():
+    global model_loaded
+    if not model_loaded:
+        try:
+            clf.model = clf.load_model('2409_2004i.h5', custom_objects={'loss': clf.weighted_loss})
+            model_loaded = True
+            print('Modelo Keras carregado com sucesso!')
+        except Exception as e:
+            print(f'Erro ao carregar o modelo: {e}')
+            raise
+    return clf.model
+
 mydb = mysql.connector.connect(
     host="yamabiko.proxy.rlwy.net",
     user="root",
@@ -211,8 +226,9 @@ def classificar_imagem():
         # Preprocessa a imagem
         img = clf.preprocess_image_with_generator(img_path, target_size=(320, 320))
 
-        # Faz a previsão com o modelo
-        predictions = clf.model.predict(img)
+        # Faz a previsão com o modelo (lazy load)
+        model = get_model()
+        predictions = model.predict(img)
 
         # Cria um diagnóstico provisório (não revisado)
         resultado = clf.labels[np.argmax(predictions[0])]  # Resultado com base na classe com maior probabilidade
