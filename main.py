@@ -17,6 +17,11 @@ mydb = mysql.connector.connect(
 
 app = Flask(__name__)
 
+# Garante que a variável PORT seja definida para o Gunicorn (Railway)
+import os
+if 'PORT' not in os.environ:
+    os.environ['PORT'] = '5000'
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:NdLvdNuqpWSRYXsJNipkNvQSGTjJfHth@yamabiko.proxy.rlwy.net:11204/medcaredb'
 #CADASTRO DE USUARIO
 @app.route('/cadastro', methods=['POST'])
