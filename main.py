@@ -1,10 +1,17 @@
+print('Iniciando main.py')
 from flask import Flask, jsonify, make_response, request
+print('Import Flask OK')
 import mysql.connector
+print('Import mysql.connector OK')
 import bcrypt
+print('Import bcrypt OK')
 import os
+print('Import os OK')
 import numpy as np
+print('Import numpy OK')
 
 import classificador as clf
+print('Import classificador OK')
 
 # Lazy load do modelo Keras
 model_loaded = False
@@ -31,11 +38,6 @@ mydb = mysql.connector.connect(
 )
 
 app = Flask(__name__)
-
-# Garante que a variável PORT seja definida para o Gunicorn (Railway)
-import os
-if 'PORT' not in os.environ:
-    os.environ['PORT'] = '5000'
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:NdLvdNuqpWSRYXsJNipkNvQSGTjJfHth@yamabiko.proxy.rlwy.net:11204/medcaredb'
 #CADASTRO DE USUARIO
