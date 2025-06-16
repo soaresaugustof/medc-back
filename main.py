@@ -1,6 +1,8 @@
 print('Iniciando main.py')
 from flask import Flask, jsonify, make_response, request
 print('Import Flask OK')
+from flask_cors import CORS  # 1. IMPORTE A BIBLIOTECA
+print('Import Flask OK')
 import mysql.connector
 print('Import mysql.connector OK')
 import bcrypt
@@ -40,6 +42,7 @@ mydb = mysql.connector.connect(
 )
 
 app = Flask(__name__)
+CORS(app)  # 2. INICIALIZE O CORS PARA TODA A APLICAÇÃO
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:NdLvdNuqpWSRYXsJNipkNvQSGTjJfHth@yamabiko.proxy.rlwy.net:11204/medcaredb'
 #CADASTRO DE USUARIO
