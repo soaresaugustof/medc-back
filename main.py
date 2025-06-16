@@ -9,6 +9,8 @@ import os
 print('Import os OK')
 import numpy as np
 print('Import numpy OK')
+import tempfile
+print('Import tempfile OK')
 
 import classificador as clf
 print('Import classificador OK')
@@ -194,98 +196,95 @@ def get_pacientes():
 
 @app.route('/clf', methods=['POST'])
 def classificar_imagem():
+    if 'imagem' not in request.files:
+        return jsonify({'error': 'Nenhuma imagem enviada!'}), 400
+
+    file = request.files['imagem']
+    if not file or not file.filename:
+        return jsonify({'error': 'Arquivo de imagem inválido!'}), 400
+
+    # Obtém os emails da requisição
+    email_paciente = request.form.get('email')
+    if not email_paciente:
+        return jsonify({'error': 'Email do paciente não fornecido!'}), 400
+
+    email_usuario = request.form.get('email_usuario')
+    if not email_usuario:
+        return jsonify({'error': 'Email do usuário não fornecido!'}), 400
+
+    cursor = None # Inicializa o cursor como None
+    temp_file_path = None # Inicializa o caminho do arquivo temporário
+
     try:
-        if 'imagem' not in request.files:
-            return jsonify({'error': 'Nenhuma imagem enviada!'}), 400
-
-        file = request.files['imagem']
-
-        # Obtém o email do paciente da request
-        email_paciente = request.form.get('email')
-        if not email_paciente:
-            return jsonify({'error': 'Email do paciente não fornecido!'}), 400
-
-        # Obtém o email do usuário (médico) da request
-        email_usuario = request.form.get('email_usuario')
-        if not email_usuario:
-            return jsonify({'error': 'Email do usuário não fornecido!'}), 400
-
-        # Conexão com o banco de dados
         cursor = mydb.cursor()
 
-        # Verifica se o paciente existe no banco de dados pelo email
+        # Verifica a existência do paciente
         cursor.execute("SELECT idPaciente FROM Paciente WHERE email = %s", (email_paciente,))
         paciente = cursor.fetchone()
-
         if not paciente:
             return jsonify({'error': 'Paciente não encontrado!'}), 404
+        paciente_id = paciente[0]
 
-        paciente_id = paciente[0]  # Obtém o ID do paciente encontrado
-
-        # Verifica se o usuário existe no banco de dados pelo email
+        # Verifica a existência do usuário (médico)
         cursor.execute("SELECT idUsuario FROM Usuario WHERE email = %s", (email_usuario,))
         usuario = cursor.fetchone()
         if not usuario:
-            cursor.close()
             return jsonify({'error': 'Usuário não encontrado!'}), 404
         usuario_id = usuario[0]
 
-        temp_dir = './temp'
-        if not os.path.exists(temp_dir):
-            os.makedirs(temp_dir)
+        # --- MANIPULAÇÃO SEGURA DE ARQUIVO TEMPORÁRIO ---
+        # Cria um arquivo temporário seguro para salvar o upload
+        temp_fd, temp_file_path = tempfile.mkstemp(suffix=os.path.splitext(file.filename)[1])
+        os.close(temp_fd) # Fecha o descritor de arquivo
+        file.save(temp_file_path)
+        # --- FIM DA MANIPULAÇÃO SEGURA ---
 
-        # Salva a imagem temporariamente
-        img_path = os.path.join(temp_dir, file.filename)
-        file.save(img_path)
+        # Preprocessa a imagem a partir do caminho temporário
+        img = clf.preprocess_image_with_generator(temp_file_path, target_size=(320, 320))
 
-        # Preprocessa a imagem
-        img = clf.preprocess_image_with_generator(img_path, target_size=(320, 320))
-
-        # Faz a previsão com o modelo (lazy load)
+        # Faz a previsão com o modelo
         model = get_model()
         predictions = model.predict(img)
 
-        # Cria um diagnóstico provisório (não revisado)
-        resultado = clf.labels[np.argmax(predictions[0])]  # Resultado com base na classe com maior probabilidade
-        probabilidade = float(np.max(predictions[0]))  # Converter para float padrão
+        resultado = clf.labels[np.argmax(predictions[0])]
+        probabilidade = float(np.max(predictions[0]))
 
-        # 1. Cria o Diagnóstico no banco de dados
+        # Insere o Diagnóstico
         cursor.execute("""
             INSERT INTO Diagnostico (resultado, probabilidade)
             VALUES (%s, %s)
         """, (resultado, probabilidade))
-        diagnostico_id = cursor.lastrowid  # Obtém o ID do diagnóstico inserido
+        diagnostico_id = cursor.lastrowid
 
-        # 2. Cria o Exame no banco de dados, associando o Diagnóstico e o Paciente encontrado
+        # Insere o Exame (ainda com o nome do arquivo hardcoded, idealmente seria corrigido)
         cursor.execute("""
             INSERT INTO Exame (data_exame, imagem_exame, Diagnostico_idDiagnostico, Usuario_idUsuario, Paciente_idPaciente)
             VALUES (NOW(), %s, %s, %s, %s)
         """, ('file-exame', diagnostico_id, usuario_id, paciente_id))
-        exame_id = cursor.lastrowid  # Obtém o ID do exame inserido
-
-        # Confirma a transação (com o exame e o diagnóstico)
+        
         mydb.commit()
 
-        # Fecha o cursor
-        cursor.close()
-
-        # Resposta com os resultados da classificação
+        # Prepara a resposta
         response = {
             'diagnostico': resultado,
             'probabilidade': f"{probabilidade * 100:.2f}%",
             'detalhes': {label: f"{float(pred * 100):.2f}%" for label, pred in zip(clf.labels, predictions[0])}
         }
 
-        # Remove a imagem temporária após o processamento
-        os.remove(img_path)
-
         return jsonify(response), 200
 
     except Exception as e:
-        # Certifica-se de fechar o cursor e retornar erro
-        if 'cursor' in locals() and cursor:
-            cursor.close()
+        # Em caso de erro, faz rollback de qualquer mudança no banco
+        if mydb.is_connected():
+            mydb.rollback()
         return jsonify({'error': str(e)}), 500
+
+    finally:
+        # Garante que o cursor seja fechado e o arquivo temporário seja removido
+        if cursor:
+            cursor.close()
+        if temp_file_path and os.path.exists(temp_file_path):
+            os.remove(temp_file_path)
 
 
 #PUXA TODOS OS PACIENTES
