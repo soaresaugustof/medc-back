@@ -179,7 +179,7 @@ def get_pacientes():
     try:
         # Obtém o cursor e executa a consulta
         cursor = mydb.cursor()
-        cursor.execute("SELECT * FROM paciente")
+        cursor.execute("SELECT * FROM Paciente")
         
         # Lê todos os resultados da consulta
         pacientes = cursor.fetchall()
@@ -296,7 +296,7 @@ def get_exames():
     try:
         # Obtém o cursor e executa a consulta
         cursor = mydb.cursor()
-        cursor.execute("SELECT * FROM exame")
+        cursor.execute("SELECT * FROM Exame")
         
         # Lê todos os resultados da consulta
         exames = cursor.fetchall()
